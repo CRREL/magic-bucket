@@ -17,7 +17,8 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 SQS_QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/605350515131/magic-bucket"
-ECS_TASK = "magic-bucket"
+# TODO I might want to be able to configure the ECS task
+ECS_TASK = "pdal-translate"
 
 def main(event, _):
     """Entrypoint."""

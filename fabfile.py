@@ -1,5 +1,11 @@
 from fabric.api import task, local
 
+DOCKER_TAGS = {
+        "pdal-translate": {
+            "local": "gadomski/pdal-translate",
+            "registry": "docker-registry.rsgiscx.net:443/gadomski/pdal-translate",
+            }
+        }
 LAMBDA_ZIP = "build/lambda.zip"
 LAMBDA_ZIP_URL = "fileb://{}".format(LAMBDA_ZIP)
 
@@ -16,6 +22,25 @@ def update_lambda():
 @task
 def create_sqs_queue():
     local("aws sqs create-queue --queue-name magic-bucket")
+
+@task
+def update_pdal_translate():
+    update_docker("pdal-translate")
+
+def update_docker(name):
+    tags = DOCKER_TAGS[name]
+    docker_build(tags["local"], name)
+    docker_tag(tags["local"], tags["registry"])
+    docker_push(tags["registry"])
+
+def docker_build(tag, directory):
+    local("docker build -t {} {}".format(tag, directory))
+
+def docker_tag(lhs, rhs):
+    local("docker tag {} {}".format(lhs, rhs))
+
+def docker_push(tag):
+    local("docker push {}".format(tag))
 
 def zip_lambda():
     local("mkdir -p build")

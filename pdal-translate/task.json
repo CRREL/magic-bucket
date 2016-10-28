@@ -1,0 +1,23 @@
+{
+    "containerDefinitions": [
+        {
+            "name": "pdal-translate",
+            "image": "docker-registry.rsgiscx.net:443/gadomski/pdal-translate",
+            "cpu": 512,
+            "environment": [
+                {
+                    "name": "AWS_REGION",
+                    "value": "us-east-1"
+                },
+                {
+                    "name": "SQS_QUEUE_URL",
+                    "value": "https://sqs.us-east-1.amazonaws.com/605350515131/magic-bucket"
+                }
+            ],
+            "memory": 512,
+            "essential": true
+        }
+    ],
+    "family": "pdal",
+    "taskRoleArn": "arn:aws:iam::605350515131:role/magic-bucket-task"
+}
