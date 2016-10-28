@@ -1,5 +1,6 @@
 """Run `pdal translate` from a magic bucket."""
 
+import json
 import logging
 import os
 import subprocess
@@ -23,6 +24,7 @@ def main():
 def pdal_translate(s3_object):
     bucket_name = s3_object.bucket_name
     basename = os.path.basename(s3_object.key)
+    logger.info("Downloading {} as {}".format(s3_object.key, basename))
     s3_object.download_file(basename)
     root, extension = os.path.splitext(basename)
 
@@ -41,7 +43,7 @@ def pdal_translate(s3_object):
         if not magic_bucket.download_file(bucket_name, config_json_key, CONFIG_JSON):
             bucket_config_json_key = os.path.join(os.path.dirname(s3_object.key), CONFIG_JSON)
             logger.info("{} not on s3, checking for {} in bucket {}".format(config_json_key, bucket_config_json_key, bucket_name))
-            if not magic_bucket.download_s3_file(bucket_name, bucket_config_json_key, CONFIG_JSON):
+            if not magic_bucket.download_file(bucket_name, bucket_config_json_key, CONFIG_JSON):
                 logger.error("No config.json found in search locations, aborting")
                 return False
 
@@ -72,8 +74,9 @@ def pdal_translate(s3_object):
         logger.error("Error when running pdal translate")
         return False
 
-    output_key = os.path.join(os.path.dirname(key), OUTPUT_DIRNAME, os.path.splitext(basename)[0] + extension)
-    magic_bucket.upload_file(output, bucket, output_key)
+    output_key = os.path.join(os.path.dirname(s3_object.key), OUTPUT_DIRNAME, os.path.splitext(basename)[0] + extension)
+    logger.info("Uploading {} to {}".format(output, output_key))
+    magic_bucket.upload_file(output, bucket_name, output_key)
     return True
 
 main()

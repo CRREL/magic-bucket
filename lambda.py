@@ -11,6 +11,9 @@ import logging
 import os
 import boto3
 
+KEY_EXTENSION_BLACKLIST = [".json"]
+OUTPUT_DIRNAME = "output"
+
 sqs = boto3.client("sqs")
 ecs = boto3.client("ecs")
 logger = logging.getLogger()
@@ -24,6 +27,14 @@ def main(event, _):
     """Entrypoint."""
     message_sent = False
     for record in event["Records"]:
+        key = record["s3"]["object"]["key"]
+        if os.path.basename(os.path.dirname(key)) == OUTPUT_DIRNAME:
+            logger.info("Key parent directory is {}, not sending sqs message".format(OUTPUT_DIRNAME))
+            continue
+        _, extension = os.path.splitext(key)
+        if key in KEY_EXTENSION_BLACKLIST:
+            logger.info("Key extension is {}, not sending sqs message".format(extension))
+            continue
         if send_sqs_message(record):
             message_sent = True
     if message_sent:
@@ -42,4 +53,4 @@ def run_ecs_task():
     """Runs the hardcoded ECS task."""
     logger.info("Running ECS task: {}".format(ECS_TASK))
     # response = ecs.run_task(taskDefinition=ECS_TASK, count=1)
-    logger.info("ECS task run: {}".format(response))
+    # logger.info("ECS task run: {}".format(response))

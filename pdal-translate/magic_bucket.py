@@ -4,6 +4,7 @@ import json
 import logging
 
 import boto3
+import botocore
 
 class MagicBucket(object):
     """Utility class for operations that will be common between tasks."""
@@ -32,9 +33,9 @@ class MagicBucket(object):
             if message is None:
                 break
             else:
+                yield message
                 message.delete()
                 self.logger.info("Deleted message {} from sqs queue {}".format(message.receipt_handle, self.sqs_queue.url))
-                yield message
 
     def s3_objects(self):
         """Generator over the s3 objects referenced by the sqs messages.
