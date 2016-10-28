@@ -2,7 +2,7 @@
     "containerDefinitions": [
         {
             "name": "pdal-translate",
-            "image": "docker-registry.rsgiscx.net:443/gadomski/pdal-translate",
+            "image": "605350515131.dkr.ecr.us-east-1.amazonaws.com/pdal-translate:latest",
             "cpu": 512,
             "environment": [
                 {
@@ -18,6 +18,6 @@
             "essential": true
         }
     ],
-    "family": "pdal",
+    "family": "pdal-translate",
     "taskRoleArn": "arn:aws:iam::605350515131:role/magic-bucket-task"
 }

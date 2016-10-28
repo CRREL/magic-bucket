@@ -52,5 +52,5 @@ def send_sqs_message(record):
 def run_ecs_task():
     """Runs the hardcoded ECS task."""
     logger.info("Running ECS task: {}".format(ECS_TASK))
-    # response = ecs.run_task(taskDefinition=ECS_TASK, count=1)
-    # logger.info("ECS task run: {}".format(response))
+    response = ecs.run_task(taskDefinition=ECS_TASK, count=1)
+    logger.info("ECS task run: {}".format(response))

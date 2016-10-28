@@ -3,7 +3,7 @@ from fabric.api import task, local
 DOCKER_TAGS = {
         "pdal-translate": {
             "local": "gadomski/pdal-translate",
-            "registry": "docker-registry.rsgiscx.net:443/gadomski/pdal-translate",
+            "registry": "605350515131.dkr.ecr.us-east-1.amazonaws.com/pdal-translate:latest",
             }
         }
 LAMBDA_ZIP = "build/lambda.zip"
@@ -18,6 +18,10 @@ def create_lambda():
 def update_lambda():
     zip_lambda()
     local("aws lambda update-function-code --function-name magic-bucket --zip-file {}".format(LAMBDA_ZIP_URL))
+
+@task
+def register_task_definition(name):
+    local("aws ecs register-task-definition --cli-input-json file://{}/task.json".format(name))
 
 @task
 def create_sqs_queue():
