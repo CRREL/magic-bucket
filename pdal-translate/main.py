@@ -75,10 +75,14 @@ def pdal_translate(s3_object):
     if subprocess.call(args) != 0:
         logger.error("Error when running pdal translate")
         return False
+    os.remove(basename)
+    os.remove(CONFIG_JSON)
 
     output_key = os.path.join(os.path.dirname(s3_object.key), OUTPUT_DIRNAME, os.path.splitext(basename)[0] + extension)
     logger.info("Uploading {} to {}".format(output, output_key))
     magic_bucket.upload_file(output, bucket_name, output_key)
+    os.remove(output)
+
     return True
 
 main()
