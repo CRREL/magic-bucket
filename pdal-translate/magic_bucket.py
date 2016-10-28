@@ -46,3 +46,18 @@ class MagicBucket(object):
             bucket_name = record["s3"]["bucket"]["name"]
             key = record["s3"]["object"]["key"]
             yield self.s3.Object(bucket_name, key)
+
+    def download_s3_file(self, bucket_name, key, filename):
+        """Downalods an s3 file to `filename`, as specified by a `bucket_name` and `key`.
+
+        Returns True if the download is successful, False otherwise.
+        """
+        try:
+            self.s3.Object(bucket_name, key).download_file(filename)
+        except botocore.exceptions.ClientError as e:
+            error_code = int(e.response["Error"]["Code"])
+            if error_code == 404:
+                return False
+            else:
+                raise e
+        return True
