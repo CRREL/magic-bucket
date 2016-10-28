@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """Run `pdal translate` from a magic bucket."""
 
 import json
