@@ -58,4 +58,3 @@ def run_ecs_task(ecs_task):
     """Runs the hardcoded ECS task."""
     logger.info("Running ECS task: {}".format(ecs_task))
     response = ecs.run_task(taskDefinition=ecs_task, count=1)
-    logger.info("ECS task run: {}".format(response))
