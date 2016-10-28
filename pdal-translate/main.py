@@ -38,7 +38,7 @@ def pdal_translate(s3_object):
     if not os.path.isfile(CONFIG_JSON):
         config_json_key = s3_object.key + ".json"
         logger.info("{} not found on filesystem, checking for {} in bucket {}".format(CONFIG_JSON, config_json_key, bucket_name))
-        if not magic_bucket.download_s3_file(bucket_name, config_json_key, CONFIG_JSON):
+        if not magic_bucket.download_file(bucket_name, config_json_key, CONFIG_JSON):
             bucket_config_json_key = os.path.join(os.path.dirname(s3_object.key), CONFIG_JSON)
             logger.info("{} not on s3, checking for {} in bucket {}".format(config_json_key, bucket_config_json_key, bucket_name))
             if not magic_bucket.download_s3_file(bucket_name, bucket_config_json_key, CONFIG_JSON):

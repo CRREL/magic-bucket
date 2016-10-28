@@ -47,7 +47,7 @@ class MagicBucket(object):
             key = record["s3"]["object"]["key"]
             yield self.s3.Object(bucket_name, key)
 
-    def download_s3_file(self, bucket_name, key, filename):
+    def download_file(self, bucket_name, key, filename):
         """Downalods an s3 file to `filename`, as specified by a `bucket_name` and `key`.
 
         Returns True if the download is successful, False otherwise.
@@ -61,3 +61,7 @@ class MagicBucket(object):
             else:
                 raise e
         return True
+
+    def upload_file(self, filename, bucket_name, key):
+        """Uploads an s3 file."""
+        self.s3.Object(bucket_name, key).upload_file(filename)
