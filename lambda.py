@@ -11,7 +11,7 @@ import logging
 import os
 import boto3
 
-KEY_EXTENSION_BLACKLIST = [".json"]
+KEY_EXTENSION_BLACKLIST = [".json", ".md"]
 OUTPUT_DIRNAME = "output"
 
 sqs = boto3.client("sqs")
@@ -31,7 +31,7 @@ def main(event, _):
             continue
         _, extension = os.path.splitext(key)
         if key in KEY_EXTENSION_BLACKLIST:
-            logger.info("Key extension is {}, not sending sqs message".format(extension))
+            logger.info("Key extension {} is blacklisted, not sending sqs message".format(extension))
             continue
         if send_sqs_message(record):
             ecs_task = key
