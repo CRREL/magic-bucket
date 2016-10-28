@@ -77,7 +77,8 @@ def pdal_translate(s3_object):
         return False
     os.remove(basename)
     os.remove(CONFIG_JSON)
-    os.remove(FILTERS_JSON)
+    if filters_json:
+        os.remove(FILTERS_JSON)
 
     output_key = os.path.join(os.path.dirname(s3_object.key), OUTPUT_DIRNAME, os.path.splitext(basename)[0] + extension)
     logger.info("Uploading {} to {}".format(output, output_key))
