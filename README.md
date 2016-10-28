@@ -29,7 +29,7 @@ The configuration file is JSON.
 
 Configuration files should be in the following format (all field are optional):
 
-```json
+```js
 {
   "filters": [], // a list of filters to be applied by `pdal translate`
   "output_ext": ".laz", // the extension of the output file (used to specify format)
