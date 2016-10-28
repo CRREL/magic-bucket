@@ -33,9 +33,9 @@ class MagicBucket(object):
             if message is None:
                 break
             else:
-                yield message
                 message.delete()
                 self.logger.info("Deleted message {} from sqs queue {}".format(message.receipt_handle, self.sqs_queue.url))
+                yield message
 
     def s3_objects(self):
         """Generator over the s3 objects referenced by the sqs messages.
