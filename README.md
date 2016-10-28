@@ -7,7 +7,7 @@ An AWS S3 bucket that uses Docker containers to process files.
 The S3 container is `s3://crrel-magic-bucket`.
 Top-level directories in the bucket define the **tasks** that are available.
 As of this writing, only one task is available: `pdal-translate`.
-Each task has it's own workflow and data organization expectations.
+Each task has its own workflow and data organization expectations.
 
 ## Task: pdal-translate
 
