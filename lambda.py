@@ -20,12 +20,10 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 SQS_QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/605350515131/magic-bucket"
-# TODO I might want to be able to configure the ECS task
-ECS_TASK = "pdal-translate"
 
 def main(event, _):
     """Entrypoint."""
-    message_sent = False
+    ecs_tasks = set()
     for record in event["Records"]:
         key = record["s3"]["object"]["key"]
         if os.path.basename(os.path.dirname(key)) == OUTPUT_DIRNAME:
@@ -36,9 +34,16 @@ def main(event, _):
             logger.info("Key extension is {}, not sending sqs message".format(extension))
             continue
         if send_sqs_message(record):
-            message_sent = True
-    if message_sent:
-        run_ecs_task()
+            ecs_task = key
+            while True:
+                dirname = os.path.dirname(ecs_task)
+                if dirname == "":
+                    break
+                else:
+                    ecs_task = dirname
+            ecs_tasks.add(ecs_task)
+    for ecs_task in ecs_tasks:
+        run_ecs_task(ecs_task)
     return True
 
 def send_sqs_message(record):
@@ -49,8 +54,8 @@ def send_sqs_message(record):
     logger.info("SQS message sent OK: {}".format(response))
     return True
 
-def run_ecs_task():
+def run_ecs_task(ecs_task):
     """Runs the hardcoded ECS task."""
-    logger.info("Running ECS task: {}".format(ECS_TASK))
-    response = ecs.run_task(taskDefinition=ECS_TASK, count=1)
+    logger.info("Running ECS task: {}".format(ecs_task))
+    response = ecs.run_task(taskDefinition=ecs_task, count=1)
     logger.info("ECS task run: {}".format(response))
