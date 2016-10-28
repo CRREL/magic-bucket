@@ -27,18 +27,24 @@ def create_sqs_queue():
 def update_pdal_translate():
     update_docker("pdal-translate")
 
+@task
 def update_docker(name):
     tags = DOCKER_TAGS[name]
-    docker_build(tags["local"], name)
+    docker_build(name, tags["local"])
     docker_tag(tags["local"], tags["registry"])
     docker_push(tags["registry"])
 
-def docker_build(tag, directory):
+@task
+def docker_build(directory, tag=None):
+    if tag is None:
+        tag = DOCKER_TAGS[directory]["local"]
     local("docker build -t {} {}".format(tag, directory))
 
+@task
 def docker_tag(lhs, rhs):
     local("docker tag {} {}".format(lhs, rhs))
 
+@task
 def docker_push(tag):
     local("docker push {}".format(tag))
 
