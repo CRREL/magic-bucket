@@ -61,9 +61,6 @@ RUN apt-get purge -y \
     liblapack-dev \
     libtiff5-dev \
     openssh-client \
-    python-dev \
-    python-numpy \
-    python-software-properties \
     software-properties-common \
     wget \
     automake \
@@ -100,8 +97,7 @@ RUN apt-get purge -y \
     libspatialite-dev \
     libdap-dev\
     ninja \
-    cython \
-    python-pip
+    cython
 
 RUN apt-get autoremove -y
 
@@ -140,10 +136,11 @@ RUN apt-get update && apt-get install -y \
     libboost-regex1.58.0 \
     libgdal1i \
     libflann1.8 \
-    libpython2.7 \
+    python-pip \
     libhdf5-cpp-11
 
-CMD pip install slackclient
+RUN pip install boto3 slackclient
+
 ADD main.py /
 ADD magic_bucket.py /
 WORKDIR /
