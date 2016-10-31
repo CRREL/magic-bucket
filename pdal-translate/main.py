@@ -32,7 +32,7 @@ def main():
         except PdalTranslateError(e):
             slack.error(str(e))
         else:
-            slack.success("Successfully translated `{}` into `{}`".format(s3_object.key, output))
+            slack.success("Successfully translated `{}` into `{}`, url: s3://{}/{}".format(s3_object.key, output, s3_object.bucket_name, output))
 
 def pdal_translate(s3_object):
     bucket_name = s3_object.bucket_name
