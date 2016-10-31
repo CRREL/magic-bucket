@@ -4,13 +4,8 @@ MAINTAINER Peter Gadomski <peter.j.gadomski@erdc.dren.mil>
 ENV CC gcc
 ENV CXX g++
 
-RUN apt-get update && apt-get install -y --fix-missing --no-install-recommends \
-        libhpdf-dev \
-    libsqlite3-mod-spatialite \
-    && rm -rf /var/lib/apt/lists/*
-
-ADD rivlib-2_3_0-x86_64-linux-gcc44.zip /
-RUN unzip /rivlib-2_3_0-x86_64-linux-gcc44.zip
+ADD rivlib-2_3_0-x86_64-linux-gcc55.zip /
+RUN unzip /rivlib-2_3_0-x86_64-linux-gcc55.zip
 
 RUN git clone --depth=1 https://github.com/PDAL/PDAL \
     && cd PDAL \
@@ -39,111 +34,16 @@ RUN git clone --depth=1 https://github.com/PDAL/PDAL \
         -DWITH_LASZIP=ON \
         -DWITH_TESTS=OFF \
         -DCMAKE_BUILD_TYPE=Release \
-        -DRiVLib_DIR=/rivlib-2_3_0-x86_64-linux-gcc44/cmake \
+        -DRiVLib_DIR=/rivlib-2_3_0-x86_64-linux-gcc55/cmake \
         .. \
     && make -j4 \
     && make install \
     && rm -rf /PDAL
 
-# Remove all our dev junk and then we'll put back only
-# runtime stuff
-RUN apt-get purge -y \
-    build-essential \
-    ca-certificates \
-    cmake \
-    curl \
-    gfortran \
-    git \
-    libarmadillo-dev \
-    libarpack2-dev \
-    libflann-dev \
-    libhdf5-serial-dev \
-    liblapack-dev \
-    libtiff5-dev \
-    openssh-client \
-    software-properties-common \
-    wget \
-    automake \
-    libtool \
-    libspatialite-dev \
-    libhdf5-dev \
-    subversion \
-    libjsoncpp-dev \
-    libboost-filesystem1.58-dev \
-    libboost-iostreams1.58-dev \
-    libboost-program-options1.58-dev \
-    libboost-system1.58-dev \
-    libboost-thread1.58-dev \
-    subversion \
-    clang \
-    libproj-dev \
-    libc6-dev \
-    libnetcdf-dev \
-    libjasper-dev \
-    libpng-dev \
-    libjpeg-dev \
-    libgif-dev \
-    libwebp-dev \
-    libhdf4-alt-dev \
-    libhdf5-dev \
-    libpq-dev \
-    libxerces-c-dev \
-    unixodbc-dev \
-    libsqlite3-dev \
-    libgeos-dev \
-    libmysqlclient-dev \
-    libltdl-dev \
-    libcurl4-openssl-dev \
-    libspatialite-dev \
-    libdap-dev\
-    ninja \
-    cython
-
-RUN apt-get autoremove -y
-
-RUN apt-get update && apt-get install -y \
-    libexpat1 \
-    libgomp1 \
-    libxml2 \
-    libgeos-c1v5 \
-    libjsoncpp1 \
-    libcurl3 \
-    libarmadillo6 \
-    libwebp5 \
-    libodbc1 \
-    odbcinst1debian2 \
-    libxerces-c3.1 \
-    libjasper1 \
-    netcdf-bin \
-    libhdf4-0-alt \
-    libgif7 \
-    libpq5 \
-    libdapclient6v5 \
-    libspatialite7 \
-    libsqlite3-mod-spatialite \
-    spatialite-bin \
-    libmysqlclient20 \
-    libtiff5 \
-    libboost-system1.58.0 \
-    libboost-filesystem1.58.0 \
-    libboost-thread1.58.0 \
-    libboost-program-options1.58.0 \
-    libboost-iostreams1.58.0 \
-    libboost-date-time1.58.0 \
-    libboost-serialization1.58.0 \
-    libboost-chrono1.58.0 \
-    libboost-atomic1.58.0 \
-    libboost-regex1.58.0 \
-    libgdal1i \
-    libflann1.8 \
-    python-pip \
-    libhdf5-cpp-11
-
 RUN pip install boto3 slackclient
 
 ADD main.py /
 ADD magic_bucket.py /
-WORKDIR /
 CMD ["./main.py"]
 
 ARG SLACK_TOKEN

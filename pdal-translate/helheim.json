@@ -21,7 +21,8 @@
     "args": ["--writers.las.scale_x=0.01",
              "--writers.las.scale_y=0.01",
              "--writers.las.scale_z=0.01",
-             "--writers.las.offset_x=536000",
-             "--writers.las.offset_y=7356000",
-             "--writers.las.offset_z=0"]
+             "--writers.las.offset_x=auto",
+             "--writers.las.offset_y=auto",
+             "--writers.las.offset_z=auto",
+             "--writers.las.a_srs=EPSG:32624"]
 }
