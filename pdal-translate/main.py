@@ -7,7 +7,7 @@ import logging
 import os
 import subprocess
 
-from magic_bucket import MagicBucket
+from magic_bucket import MagicBucket, Slack
 
 CONFIG_JSON = "config.json"
 FILTERS_JSON = "filters.json"
@@ -18,10 +18,21 @@ logger = logging.getLogger("magic-bucket")
 logger.setLevel(logging.INFO)
 
 magic_bucket = MagicBucket(os.environ["AWS_REGION"], os.environ["SQS_QUEUE_URL"])
+slack = Slack(os.environ["SLACK_TOKEN"], "pdal-translate", ":pdal:")
+
+class PdalTranslateError(Exception):
+    def __init__(self, message):
+        super(PdalTranslateError, self).__init__(message)
 
 def main():
     for s3_object in magic_bucket.s3_objects():
-        pdal_translate(s3_object)
+        slack.info("Received `{}`".format(s3_object.key))
+        try:
+            output = pdal_translate(s3_object)
+        except PdalTranslateError(e):
+            slack.error(str(e))
+        else:
+            slack.success("Successfully translated `{}` into `{}`".format(s3_object.key, output))
 
 def pdal_translate(s3_object):
     bucket_name = s3_object.bucket_name
@@ -33,10 +44,12 @@ def pdal_translate(s3_object):
     if extension == ".zip":
         if subprocess.call(["unzip", basename]) != 0:
             logger.error("Error when running `unzip {}`, aborting".format(basename))
+            raise PdalTranslateError("Unable to unzip {}".format(basename))
         basename = root
     elif extension == ".gz":
         if subprocess.check(["gunzip", basename]) != 0:
             logger.error("Error when running `gunzip {}`, aborting".format(basename))
+            raise PdalTranslateError("Unable to gunzip {}".format(basename))
         basename = root
 
     if not os.path.isfile(CONFIG_JSON):
@@ -47,7 +60,7 @@ def pdal_translate(s3_object):
             logger.info("{} not on s3, checking for {} in bucket {}".format(config_json_key, bucket_config_json_key, bucket_name))
             if not magic_bucket.download_file(bucket_name, bucket_config_json_key, CONFIG_JSON):
                 logger.error("No config.json found in search locations, aborting")
-                return False
+                raise PdalTranslateError("No config.json found in search locations")
 
     with open(CONFIG_JSON) as config_json_file:
         config_json = json.load(config_json_file)
@@ -72,9 +85,11 @@ def pdal_translate(s3_object):
     if offset is not None:
         args.extend(["--offset", offset])
     logger.info("Running {}".format(args))
-    if subprocess.call(args) != 0:
+    process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    (stdout, _) = process.communicate()
+    if process.returncode != 0:
         logger.error("Error when running pdal translate")
-        return False
+        raise PdalTranslateError("Error while running {}: {}".format(args, stdout))
     os.remove(basename)
     os.remove(CONFIG_JSON)
     if filters_json:
@@ -84,7 +99,6 @@ def pdal_translate(s3_object):
     logger.info("Uploading {} to {}".format(output, output_key))
     magic_bucket.upload_file(output, bucket_name, output_key)
     os.remove(output)
-
-    return True
+    return output_key
 
 main()

@@ -145,3 +145,6 @@ ADD main.py /
 ADD magic_bucket.py /
 WORKDIR /
 CMD ["./main.py"]
+
+ARG SLACK_TOKEN
+ENV SLACK_TOKEN ${SLACK_TOKEN}

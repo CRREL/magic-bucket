@@ -28,21 +28,21 @@ def create_sqs_queue():
     local("aws sqs create-queue --queue-name magic-bucket")
 
 @task
-def update_pdal_translate():
-    update_docker("pdal-translate")
+def update_pdal_translate(slack_token):
+    update_docker("pdal-translate", slack_token)
 
 @task
-def update_docker(name):
+def update_docker(name, slack_token):
     tags = DOCKER_TAGS[name]
-    docker_build(name, tags["local"])
+    docker_build(name, slack_token, tags["local"])
     docker_tag(tags["local"], tags["registry"])
     docker_push(tags["registry"])
 
 @task
-def docker_build(directory, tag=None):
+def docker_build(directory, slack_token, tag=None):
     if tag is None:
         tag = DOCKER_TAGS[directory]["local"]
-    local("docker build -t {} {}".format(tag, directory))
+    local("docker build -t {} --build-arg SLACK_TOKEN={} {}".format(tag, slack_token, directory))
 
 @task
 def docker_tag(lhs, rhs):
