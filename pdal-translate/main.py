@@ -29,8 +29,11 @@ def main():
         slack.info("Received `{}`".format(s3_object.key))
         try:
             output = pdal_translate(s3_object)
-        except PdalTranslateError(e):
-            slack.error(str(e))
+        except PdalTranslateError as e:
+            slack.fail(str(e))
+        except Exception as e:
+            slack.fail(str(e))
+            raise e
         else:
             slack.success("Successfully translated `{}` into `{}`, url: s3://{}/{}".format(s3_object.key, output, s3_object.bucket_name, output))
 
@@ -63,12 +66,14 @@ def pdal_translate(s3_object):
                 raise PdalTranslateError("No config.json found in search locations")
 
     with open(CONFIG_JSON) as config_json_file:
-        config_json = json.load(config_json_file)
+        try:
+            config_json = json.load(config_json_file)
+        except ValueError as e:
+            raise PdalTranslateError("Invalid configuration file: {}".format(e))
 
     filters_json = config_json.get("filters")
     output_ext = config_json.get("output_ext")
-    scale = config_json.get("scale")
-    offset = config_json.get("offset")
+    additional_args = config_json.get("args")
 
     output, extension = os.path.splitext(basename)
     if output_ext:
@@ -78,12 +83,10 @@ def pdal_translate(s3_object):
     args = ["pdal", "translate", "-i", basename, "-o", output]
     if filters_json is not None:
         with open(FILTERS_JSON, "w") as filters_json_file:
-            json.dump(filters_json_file)
+            json.dump(filters_json, filters_json_file)
         args.extend(["--json", FILTERS_JSON])
-    if scale is not None:
-        args.extend(["--scale", scale])
-    if offset is not None:
-        args.extend(["--offset", offset])
+    if additional_args is not None:
+        args.extend(additional_args)
     logger.info("Running {}".format(args))
     process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     (stdout, _) = process.communicate()

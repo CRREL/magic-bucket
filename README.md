@@ -33,7 +33,6 @@ Configuration files should be in the following format (all field are optional):
 {
   "filters": [], // a list of filters to be applied by `pdal translate`
   "output_ext": ".laz", // the extension of the output file (used to specify format)
-  "scale": "0.1 0.1 0.00001",
-  "offset": "1 2 3"
+  "args": ["--writers.las.scale_x", ".1"] // additional arguments to pass to `pdal translate`
 }
 ```
