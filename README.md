@@ -36,3 +36,5 @@ Configuration files should be in the following format (all field are optional):
   "args": ["--writers.las.scale_x", ".1"] // additional arguments to pass to `pdal translate`
 }
 ```
+
+See [helheim.json](https://github.com/gadomski/magic-bucket/blob/master/pdal-translate/helheim.json) for an example configuration file.
