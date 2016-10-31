@@ -30,7 +30,7 @@ def main(event, _):
             logger.info("Key parent directory is {}, not sending sqs message".format(OUTPUT_DIRNAME))
             continue
         _, extension = os.path.splitext(key)
-        if key in KEY_EXTENSION_BLACKLIST:
+        if extension in KEY_EXTENSION_BLACKLIST:
             logger.info("Key extension {} is blacklisted, not sending sqs message".format(extension))
             continue
         if send_sqs_message(record):
