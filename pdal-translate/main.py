@@ -45,14 +45,10 @@ def pdal_translate(s3_object):
     root, extension = os.path.splitext(basename)
 
     if extension == ".zip":
-        if subprocess.call(["unzip", basename]) != 0:
-            logger.error("Error when running `unzip {}`, aborting".format(basename))
-            raise PdalTranslateError("Unable to unzip {}".format(basename))
+        subprocess.check_call(["unzip", basename])
         basename = root
     elif extension == ".gz":
-        if subprocess.check(["gunzip", basename]) != 0:
-            logger.error("Error when running `gunzip {}`, aborting".format(basename))
-            raise PdalTranslateError("Unable to gunzip {}".format(basename))
+        subprocess.check_call(["gunzip", basename])
         basename = root
 
     if not os.path.isfile(CONFIG_JSON):
@@ -92,7 +88,7 @@ def pdal_translate(s3_object):
     (stdout, _) = process.communicate()
     if process.returncode != 0:
         logger.error("Error when running pdal translate")
-        raise PdalTranslateError("Error while running {}: {}".format(args, stdout))
+        raise PdalTranslateError("Error while running {} (returncode {}): {}".format(args, process.returncode, stdout))
     os.remove(basename)
     os.remove(CONFIG_JSON)
     if filters_json:
