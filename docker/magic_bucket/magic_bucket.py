@@ -5,7 +5,7 @@ import logging
 
 import boto3
 import botocore
-from slackclient import SlackClient
+
 
 class MagicBucket(object):
     """Utility class for operations that will be common between tasks."""
@@ -28,20 +28,22 @@ class MagicBucket(object):
             return None
 
     def consume_messages(self):
-        """Fetches messages from the sqs queue, then removes them after they are returned from the generator."""
+        """Fetches and removes messages from the sqs queue."""
         while True:
             message = self.receive_message()
             if message is None:
                 break
             else:
                 message.delete()
-                self.logger.info("Deleted message {} from sqs queue {}".format(message.receipt_handle, self.sqs_queue.url))
+                self.logger.info("Deleted message {} from sqs queue {}".format(
+                    message.receipt_handle, self.sqs_queue.url))
                 yield message
 
     def s3_objects(self):
         """Generator over the s3 objects referenced by the sqs messages.
 
-        This generator is destructive; it deletes the sqs messages before returning the s3 object.
+        This generator is destructive; it deletes the sqs messages before
+        returning the s3 object.
         """
         for message in self.consume_messages():
             record = json.loads(message.body)
@@ -49,13 +51,24 @@ class MagicBucket(object):
             key = record["s3"]["object"]["key"]
             yield self.s3.Object(bucket_name, key)
 
+    def s3_object(self, bucket_name, key):
+        """Returns an s3 object in the bucket with the key."""
+        return self.s3.Object(bucket_name, key)
+
     def download_file(self, bucket_name, key, filename):
-        """Downalods an s3 file to `filename`, as specified by a `bucket_name` and `key`.
+        """Downloads an s3 file to `filename`.
 
         Returns True if the download is successful, False otherwise.
         """
+        return self.download_object(self.s3.Object(bucket_name, key), filename)
+
+    def download_object(self, s3_object, filename):
+        """Downloads an s3 object to `filename`.
+
+        Returns true if the download is successful, false otherwise.
+        """
         try:
-            self.s3.Object(bucket_name, key).download_file(filename)
+            s3_object.download_file(filename)
         except botocore.exceptions.ClientError as e:
             error_code = int(e.response["Error"]["Code"])
             if error_code == 404:
@@ -66,35 +79,6 @@ class MagicBucket(object):
 
     def upload_file(self, filename, bucket_name, key):
         """Uploads an s3 file."""
-        self.s3.Object(bucket_name, key).upload_file(filename)
-
-
-class Slack(object):
-    """Wrapper around the slack client to provide utility methods."""
-
-    DEFAULT_CHANNEL = "#magic-bucket"
-
-    def __init__(self, token, username, icon_emoji):
-        """Creates a new slack interface."""
-        self.client = SlackClient(token)
-        self.channel = self.DEFAULT_CHANNEL
-        self.username = username
-        self.icon_emoji = icon_emoji
-
-    def info(self, message):
-        """Send an information message."""
-        self.post_message(message, message_emoji=":information_desk_person:")
-
-    def success(self, message):
-        """Send an success message."""
-        self.post_message(message, message_emoji=":the_horns:")
-
-    def fail(self, message):
-        """Send a fail message."""
-        self.post_message(message, message_emoji=":sadpanda:")
-
-    def post_message(self, message, message_emoji=None):
-        """Post a message to the pre-configured channel."""
-        if message_emoji is not None:
-            message = "{} {}".format(message_emoji, message)
-        self.client.api_call("chat.postMessage", channel=self.channel, text=message, username=self.username, icon_emoji=self.icon_emoji)
+        s3_object = self.s3.Object(bucket_name, key)
+        s3_object.upload_file(filename)
+        return s3_object

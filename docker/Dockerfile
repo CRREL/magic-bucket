@@ -6,6 +6,7 @@ ENV CXX g++
 
 ADD rivlib-2_3_0-x86_64-linux-gcc55.zip /
 RUN unzip /rivlib-2_3_0-x86_64-linux-gcc55.zip
+RUN rm /rivlib-2_3_0-x86_64-linux-gcc55.zip
 
 RUN git clone --depth=1 https://github.com/PDAL/PDAL \
     && cd PDAL \
@@ -42,8 +43,11 @@ RUN git clone --depth=1 https://github.com/PDAL/PDAL \
 
 RUN pip install boto3 slackclient
 
+ADD rimtatls-2_5-linux-x86_64.tar.gz /
+RUN ln -s /rimtatls-linux-x86_64/rimtatls /usr/bin/rimtatls
+
 ADD main.py /
-ADD magic_bucket.py /
+ADD magic_bucket /magic_bucket
 CMD ["./main.py"]
 
 ARG SLACK_TOKEN

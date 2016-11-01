@@ -1,2 +1,3 @@
 *.pyc
-pdal-translate/rivlib-2_3_0-x86_64-linux-gcc55.zip
+docker/rivlib-2_3_0-x86_64-linux-gcc55.zip
+docker/rimtatls-2_5-linux-x86_64.tar.gz

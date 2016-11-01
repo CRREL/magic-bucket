@@ -20,41 +20,45 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 SQS_QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/605350515131/magic-bucket"
+ECS_TASK = "magic-bucket"
+
 
 def main(event, _):
     """Entrypoint."""
-    ecs_tasks = set()
+    message_sent = False
     for record in event["Records"]:
         key = record["s3"]["object"]["key"]
         if os.path.basename(os.path.dirname(key)) == OUTPUT_DIRNAME:
-            logger.info("Key parent directory is {}, not sending sqs message".format(OUTPUT_DIRNAME))
+            logger.info(
+                "Key parent directory is {}, not sending sqs message".format(
+                    OUTPUT_DIRNAME))
             continue
         _, extension = os.path.splitext(key)
         if extension in KEY_EXTENSION_BLACKLIST:
-            logger.info("Key extension {} is blacklisted, not sending sqs message".format(extension))
+            logger.info(
+                "Key extension {} is blacklisted, not sending sqs message".format(extension))
             continue
         if send_sqs_message(record):
-            ecs_task = key
-            while True:
-                dirname = os.path.dirname(ecs_task)
-                if dirname == "":
-                    break
-                else:
-                    ecs_task = dirname
-            ecs_tasks.add(ecs_task)
-    for ecs_task in ecs_tasks:
-        run_ecs_task(ecs_task)
+            message_sent = True
+    if message_sent:
+        run_ecs_task()
     return True
 
+
 def send_sqs_message(record):
-    """Sends an SQS message containing the record information to the hardcoded SQS queue."""
+    """Sends an SQS message containing the record information."""
     message_body = json.dumps(record)
-    logger.info("Sending SQS message to {}: {}".format(SQS_QUEUE_URL, message_body))
-    response = sqs.send_message(QueueUrl=SQS_QUEUE_URL, MessageBody=message_body)
+    logger.info("Sending SQS message to {}: {}".format(
+        SQS_QUEUE_URL, message_body))
+    response = sqs.send_message(
+        QueueUrl=SQS_QUEUE_URL, MessageBody=message_body)
     logger.info("SQS message sent OK: {}".format(response))
     return True
 
-def run_ecs_task(ecs_task):
+
+def run_ecs_task():
     """Runs the hardcoded ECS task."""
-    logger.info("Running ECS task: {}".format(ecs_task))
-    response = ecs.run_task(taskDefinition=ecs_task, count=1)
+    logger.info("Running ECS task: {}".format(ECS_TASK))
+    response = ecs.run_task(taskDefinition=ECS_TASK, count=1)
+    logger.info("ECS task run OK: {}".format(response))
+    return True

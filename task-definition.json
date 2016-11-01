@@ -1,8 +1,8 @@
 {
     "containerDefinitions": [
         {
-            "name": "pdal-translate",
-            "image": "605350515131.dkr.ecr.us-east-1.amazonaws.com/pdal-translate:latest",
+            "name": "magic-bucket",
+            "image": "605350515131.dkr.ecr.us-east-1.amazonaws.com/magic-bucket:latest",
             "cpu": 512,
             "environment": [
                 {
@@ -18,6 +18,6 @@
             "essential": true
         }
     ],
-    "family": "pdal-translate",
+    "family": "magic-bucket",
     "taskRoleArn": "arn:aws:iam::605350515131:role/magic-bucket-task"
 }

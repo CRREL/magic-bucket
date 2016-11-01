@@ -1,57 +1,40 @@
 from fabric.api import task, local
 
-DOCKER_TAGS = {
-        "pdal-translate": {
-            "local": "gadomski/pdal-translate",
-            "registry": "605350515131.dkr.ecr.us-east-1.amazonaws.com/pdal-translate:latest",
-            }
-        }
+LOCAL_DOCKER_TAG = "gadomski/magic-bucket"
+REGISTRY_DOCKER_TAG = "605350515131.dkr.ecr.us-east-1.amazonaws.com/magic-bucket:latest"
 LAMBDA_ZIP = "build/lambda.zip"
 LAMBDA_ZIP_URL = "fileb://{}".format(LAMBDA_ZIP)
 
-@task
-def create_lambda():
-    zip_lambda()
-    local("aws lambda create-function --function-name magic-bucket --runtime python2.7 --role arn:aws:iam::605350515131:role/magic-bucket-lambda --handler lambda.main --zip-file {}".format(LAMBDA_ZIP_URL))
 
 @task
 def update_lambda():
-    zip_lambda()
+    local("mkdir -p build")
+    local("zip -j {} lambda.py".format(LAMBDA_ZIP))
     local("aws lambda update-function-code --function-name magic-bucket --zip-file {}".format(LAMBDA_ZIP_URL))
 
-@task
-def register_task_definition(name):
-    local("aws ecs register-task-definition --cli-input-json file://{}/task.json".format(name))
 
 @task
-def create_sqs_queue():
-    local("aws sqs create-queue --queue-name magic-bucket")
+def register_task_definition():
+    local("aws ecs register-task-definition --cli-input-json file://task-definition.json")
+
 
 @task
-def update_pdal_translate(slack_token):
-    update_docker("pdal-translate", slack_token)
+def update_docker(slack_token):
+    docker_build(slack_token, LOCAL_DOCKER_TAG)
+    docker_tag(LOCAL_DOCKER_TAG, REGISTRY_DOCKER_TAG)
+    docker_push(REGISTRY_DOCKER_TAG)
+
 
 @task
-def update_docker(name, slack_token):
-    tags = DOCKER_TAGS[name]
-    docker_build(name, slack_token, tags["local"])
-    docker_tag(tags["local"], tags["registry"])
-    docker_push(tags["registry"])
+def docker_build(slack_token, tag):
+    local("docker build -t {} --build-arg SLACK_TOKEN={} docker".format(tag, slack_token))
 
-@task
-def docker_build(directory, slack_token, tag=None):
-    if tag is None:
-        tag = DOCKER_TAGS[directory]["local"]
-    local("docker build -t {} --build-arg SLACK_TOKEN={} {}".format(tag, slack_token, directory))
 
 @task
 def docker_tag(lhs, rhs):
     local("docker tag {} {}".format(lhs, rhs))
 
+
 @task
 def docker_push(tag):
     local("docker push {}".format(tag))
-
-def zip_lambda():
-    local("mkdir -p build")
-    local("zip -j {} lambda.py".format(LAMBDA_ZIP))
