@@ -14,7 +14,7 @@
                     "value": "https://sqs.us-east-1.amazonaws.com/605350515131/magic-bucket"
                 }
             ],
-            "memory": 2048,
+            "memory": 8192,
             "essential": true
         }
     ],
