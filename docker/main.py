@@ -31,9 +31,10 @@ def main():
             except MagicBucketException as e:
                 slack.fail("Error while running *{}* on *{}*: {}".format(
                     task.name(), s3_object.key, e))
-            slack.success("Completed *{}* on `{}`, uploaded to s3://{}/{}"
-                          .format(task.name(), s3_object.key,
-                                  output.bucket_name, output.key))
+            else:
+                slack.success("Completed *{}* on `{}`, uploaded to s3://{}/{}"
+                              .format(task.name(), s3_object.key,
+                                      output.bucket_name, output.key))
     except Exception as e:
         slack.fail("Unhandled exception, aborting: {}".format(e))
         raise e
