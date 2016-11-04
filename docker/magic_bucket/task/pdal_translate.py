@@ -79,6 +79,13 @@ class PdalTranslate(Task):
                                                self.config_file)
 
     def _download_directory_config_file(self):
-        key = os.path.join(os.path.dirname(self.key), self.config_file)
-        return self.magic_bucket.download_file(self.bucket_name, key,
-                                               self.config_file)
+        assert self.key.startswith("{}/".format(self.name()))
+        dirname = os.path.dirname(self.key)
+        while dirname:
+            key = os.path.join(dirname, self.config_file)
+            if self.magic_bucket.download_file(self.bucket_name, key,
+                                               self.config_file):
+                return True
+            else:
+                dirname = os.path.dirname(dirname)
+        return False
