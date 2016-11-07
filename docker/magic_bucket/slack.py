@@ -4,7 +4,7 @@ from slackclient import SlackClient
 class Slack(object):
     """Wrapper around the slack client to provide utility methods."""
 
-    DEFAULT_CHANNEL = "#magic-bucket"
+    DEFAULT_CHANNEL = "#magic-bucket-notify"
     DEFAULT_USERNAME = "bucketbot"
 
     def __init__(self, token):
