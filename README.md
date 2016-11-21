@@ -51,6 +51,16 @@ Configuration files look like this (all fields optional):
 See the examples directory in this repo for sample configuration files.
 
 
+### Task: `pdal-info`
+
+Runs `pdal info --all` on a file:
+
+```
+aws s3 cp autzen.las s3://crrel-magic-bucket/pdal-info/autzen.las
+aws s3 cp s3://crrel-magic-bucket/pdal-info/output/autzen.las.json autzen.las.json
+```
+
+
 ### Task: `rimtatls`
 
 Runs Riegl's `rimtatls` executable on `rxp` files:

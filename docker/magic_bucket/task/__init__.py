@@ -1,6 +1,7 @@
 import os
 
 from ..exceptions import MagicBucketException
+from pdal_info import PdalInfo
 from pdal_translate import PdalTranslate
 from rimtatls import Rimtatls
 
@@ -25,5 +26,7 @@ def create_task(magic_bucket, s3_object):
         return PdalTranslate(magic_bucket, s3_object)
     elif task_name == "rimtatls":
         return Rimtatls(magic_bucket, s3_object)
+    elif task_name == "pdal-info":
+        return PdalInfo(magic_bucket, s3_object)
     else:
         raise UnknownTask(task_name)
