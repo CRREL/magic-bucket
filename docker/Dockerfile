@@ -8,9 +8,9 @@ ADD rivlib-2_5_3-x86_64-linux-gcc55.zip /
 RUN unzip /rivlib-2_5_3-x86_64-linux-gcc55.zip
 RUN rm /rivlib-2_5_3-x86_64-linux-gcc55.zip
 
-RUN git clone --depth=1 --branch=1.5-maintenance https://github.com/PDAL/PDAL \
+RUN git clone --depth=1 --branch=1.6-maintenance https://github.com/PDAL/PDAL \
     && cd PDAL \
-    && git checkout 1.5-maintenance \
+    && git checkout 1.6-maintenance \
     && mkdir build \
     && cd build \
     && cmake \
