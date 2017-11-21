@@ -4,13 +4,13 @@ MAINTAINER Peter Gadomski <peter.j.gadomski@erdc.dren.mil>
 ENV CC gcc
 ENV CXX g++
 
-ADD rivlib-2_3_0-x86_64-linux-gcc55.zip /
-RUN unzip /rivlib-2_3_0-x86_64-linux-gcc55.zip
-RUN rm /rivlib-2_3_0-x86_64-linux-gcc55.zip
+ADD rivlib-2_5_3-x86_64-linux-gcc55.zip /
+RUN unzip /rivlib-2_5_3-x86_64-linux-gcc55.zip
+RUN rm /rivlib-2_5_3-x86_64-linux-gcc55.zip
 
-RUN git clone --depth=1 https://github.com/PDAL/PDAL \
+RUN git clone --depth=10 https://github.com/PDAL/PDAL \
     && cd PDAL \
-    && git checkout master \
+    && git checkout d494a31d1fb50011ff8a67f039b5f5ff8b018d9d \
     && mkdir build \
     && cd build \
     && cmake \
@@ -21,26 +21,25 @@ RUN git clone --depth=1 https://github.com/PDAL/PDAL \
         -DBUILD_PLUGIN_MRSID=ON \
         -DBUILD_PLUGIN_NITF=ON \
         -DBUILD_PLUGIN_OCI=OFF \
-        -DBUILD_PLUGIN_P2G=ON \
-        -DBUILD_PLUGIN_PCL=ON \
+        -DBUILD_PLUGIN_PCL=OFF \
         -DBUILD_PLUGIN_PGPOINTCLOUD=ON \
         -DBUILD_PLUGIN_SQLITE=ON \
         -DBUILD_PLUGIN_RIVLIB=ON \
+        -DBUILD_RIVLIB_TESTS=OFF \
         -DBUILD_PLUGIN_PYTHON=ON \
         -DCMAKE_INSTALL_PREFIX=/usr \
         -DENABLE_CTEST=OFF \
-        -DWITH_APPS=ON \
         -DWITH_LAZPERF=ON \
-        -DWITH_GEOTIFF=ON \
         -DWITH_LASZIP=ON \
         -DWITH_TESTS=OFF \
         -DCMAKE_BUILD_TYPE=Release \
-        -DRiVLib_DIR=/rivlib-2_3_0-x86_64-linux-gcc55/cmake \
+        -DRiVLib_DIR=/rivlib-2_5_3-x86_64-linux-gcc55/cmake \
         .. \
     && make -j4 \
     && make install \
     && rm -rf /PDAL
 
+RUN pip install --upgrade pip
 RUN pip install boto3 slackclient
 
 ADD rimtatls-2_5-linux-x86_64.tar.gz /
