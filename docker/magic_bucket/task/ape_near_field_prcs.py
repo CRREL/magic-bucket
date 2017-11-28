@@ -24,11 +24,13 @@ class ApeNearFieldPrcs(Task):
     def name(self):
         return self.NAME
 
-    def process(self, filename):
+    def process(self, laz_filename):
         if not os.path.isfile(self.fixed):
             if not self.download_fixed_laz():
                 raise MissingFixedFile()
             self.subprocess(["pdal", "translate", self.fixed_laz, self.fixed])
+        filename = os.path.splitext(laz_filename)[0] + ".las"
+        self.subprocess(["pdal", "translate", laz_filename, filename])
         output = os.path.splitext(filename)[0] + ".dat"
         args = ["/root/.cargo/bin/ape", "cpd", self.fixed, filename, output]
         self.logger.info("Running {}".format(args))
